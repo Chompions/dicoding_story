@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name" translatable="false">dicoding_story</string>
+    <string name="email_address">Email address</string>
+    <string name="password">Password</string>
+    <string name="name">Name</string>
+
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="sign_out">Sign out</string>
+
+    <string name="error_email">Email address must be valid</string>
+    <string name="error_password">Password must be at least 6 characters long</string>
+    <string name="story_image">Story image</string>
+    <string name="add_story">Add story</string>
+    <string name="add_image">Add image</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="upload">Upload</string>
+    <string name="capture_photo">Capture photo</string>
+    <string name="app_widget_description">Story widget</string>
+    <string name="empty_text">There are no stories</string>
+    <string name="settings">Settings</string>
+    <string name="add_your_image_description">Add your image description</string>
+
+</resources>

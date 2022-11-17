@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="email_address">Alamat email</string>
+    <string name="password">Kata sandi</string>
+    <string name="name">Nama</string>
+    <string name="sign_in">Masuk</string>
+    <string name="sign_up">Daftar</string>
+    <string name="sign_out">Keluar</string>
+    <string name="error_email">Alamat email harus valid</string>
+    <string name="error_password">Kata sandi minimal harus 6 karakter</string>
+    <string name="story_image">Gambar cerita</string>
+    <string name="add_story">Tambah cerita</string>
+    <string name="add_image">Tambah gambar</string>
+    <string name="camera">Kamera</string>
+    <string name="gallery">Galeri</string>
+    <string name="upload">Unggah</string>
+    <string name="capture_photo">Ambil gambar</string>
+    <string name="app_widget_description">Cerita widget</string>
+    <string name="empty_text">Tidak ada cerita</string>
+    <string name="settings">Pengaturan</string>
+    <string name="add_your_image_description">Tambahkan deskripsi gambarmu</string>
+</resources>
