@@ -15,19 +15,15 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
+import com.sawelo.dicoding_story.R
 import com.sawelo.dicoding_story.activity.CameraActivity
 import com.sawelo.dicoding_story.databinding.FragmentAddStoryBinding
-import com.sawelo.dicoding_story.remote.ApiConfig
-import com.sawelo.dicoding_story.remote.StoryResponse
 import com.sawelo.dicoding_story.ui.StoryViewModel
 import com.sawelo.dicoding_story.utils.CameraUtils
 import com.sawelo.dicoding_story.utils.SharedPrefsData
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -57,9 +53,7 @@ class AddStoryFragment : Fragment() {
         }
 
         binding.edAddDescription.setText(viewModel.tempStoryDescText.value)
-        binding.edAddDescription.doAfterTextChanged {
-            viewModel.setTempStoryDescText(it.toString())
-        }
+        binding.edAddDescription.doAfterTextChanged { viewModel.setTempStoryDescText(it.toString()) }
 
         binding.btnAddCamera.setOnClickListener {
             val intent = Intent(context, CameraActivity::class.java)
@@ -74,7 +68,19 @@ class AddStoryFragment : Fragment() {
         }
 
         binding.btnAddUpload.setOnClickListener {
-            uploadStory()
+            lifecycleScope.launch {
+                binding.pbAddProgressBar.visibility = View.VISIBLE
+                if (viewModel.getDescTextRequestBody() != null && viewModel.getImageFileMultipartBody() != null) {
+                    viewModel.postStory()
+                    parentFragmentManager.popBackStack()
+                } else {
+                    Snackbar
+                        .make(binding.btnAddUpload, R.string.error_add_story, Snackbar.LENGTH_SHORT)
+                        .show()
+                }
+
+                binding.pbAddProgressBar.visibility = View.GONE
+            }
         }
     }
 
@@ -82,17 +88,31 @@ class AddStoryFragment : Fragment() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            @Suppress("DEPRECATION") val file = if (Build.VERSION.SDK_INT >= 33) {
-                result.data?.getSerializableExtra(
-                    CameraActivity.PHOTO_EXTRA, File::class.java
-                ) as File
-            } else {
-                result.data?.getSerializableExtra(
-                    CameraActivity.PHOTO_EXTRA
-                ) as File
-            }
+            lifecycleScope.launch(Dispatchers.IO) {
+                @Suppress("DEPRECATION") val file = if (Build.VERSION.SDK_INT >= 33) {
+                    result.data?.getSerializableExtra(
+                        CameraActivity.PHOTO_EXTRA, File::class.java
+                    ) as File
+                } else {
+                    result.data?.getSerializableExtra(
+                        CameraActivity.PHOTO_EXTRA
+                    ) as File
+                }
 
-            viewModel.setTempStoryImageFile(file)
+                val smallerFile = CameraUtils.createTempFile(requireContext())
+                val inputStream = file.inputStream()
+                val outputStream = FileOutputStream(smallerFile)
+                val buffer = ByteArray(1024)
+
+                var len: Int
+                while (inputStream.read(buffer).also { len = it } > 0) {
+                    outputStream.write(buffer, 0, len)
+                }
+                outputStream.close()
+                inputStream.close()
+
+                viewModel.setTempStoryImageFile(smallerFile)
+            }
         }
     }
 
@@ -118,67 +138,6 @@ class AddStoryFragment : Fragment() {
 
                 viewModel.setTempStoryImageFile(file)
             }
-        }
-    }
-
-    private fun uploadStory() {
-        val imageFileMultipartBody = viewModel.getImageFileMultipartBody()
-        val descTextRequestBody = viewModel.getDescTextRequestBody()
-
-        if (imageFileMultipartBody != null && descTextRequestBody != null) {
-            binding.pbAddProgressBar.visibility = View.VISIBLE
-
-            val token = prefsData.getToken()
-            val client = ApiConfig.getApiService().postStory(
-                "Bearer $token", imageFileMultipartBody, descTextRequestBody
-            )
-
-            client.enqueue(object : Callback<StoryResponse> {
-                override fun onResponse(
-                    call: Call<StoryResponse>,
-                    response: Response<StoryResponse>
-                ) {
-                    binding.pbAddProgressBar.visibility = View.GONE
-                    if (response.isSuccessful) {
-                        val body = response.body()
-                        if (body != null) {
-                            Snackbar
-                                .make(binding.root, body.message, Snackbar.LENGTH_SHORT)
-                                .show()
-                            parentFragmentManager.popBackStack()
-                        }
-                    } else {
-                        if (response.errorBody() != null) {
-                            val errorResponse = ApiConfig.convertErrorBody<StoryResponse>(
-                                response.errorBody()!!
-                            )
-                            Snackbar
-                                .make(
-                                    binding.root,
-                                    "Upload story failed: ${errorResponse.message}",
-                                    Snackbar.LENGTH_SHORT
-                                )
-                                .show()
-                        }
-                    }
-                }
-
-                override fun onFailure(call: Call<StoryResponse>, t: Throwable) {
-                    binding.pbAddProgressBar.visibility = View.GONE
-                    Snackbar
-                        .make(
-                            binding.root,
-                            "Upload story failed: ${t.message}",
-                            Snackbar.LENGTH_SHORT
-                        )
-                        .show()
-                }
-
-            })
-        } else {
-            Snackbar
-                .make(binding.root, "Image or description must not be empty", Snackbar.LENGTH_SHORT)
-                .show()
         }
     }
 }

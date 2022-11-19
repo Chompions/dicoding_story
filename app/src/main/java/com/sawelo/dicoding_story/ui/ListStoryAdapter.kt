@@ -7,8 +7,9 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.Adapter
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -18,9 +19,9 @@ import com.sawelo.dicoding_story.R
 import com.sawelo.dicoding_story.remote.StoryListResponse
 
 class ListStoryAdapter(
-    private val data: List<StoryListResponse>,
-    private val callback: (position: Int, imageView: ImageView) -> Unit
-) : Adapter<ListStoryAdapter.ListStoryViewHolder>() {
+    diffUtil: DiffUtil.ItemCallback<StoryListResponse>,
+    private val callback: (item: StoryListResponse, imageView: ImageView) -> Unit
+) : PagingDataAdapter<StoryListResponse, ListStoryAdapter.ListStoryViewHolder>(diffUtil) {
 
     inner class ListStoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val image: ImageView = itemView.findViewById(R.id.iv_item_photo)
@@ -34,11 +35,11 @@ class ListStoryAdapter(
     }
 
     override fun onBindViewHolder(holder: ListStoryViewHolder, position: Int) {
-        holder.name.text = data[position].name
-
+        val item = getItem(position)
+        holder.name.text = item?.name
         holder.image.transitionName = "imageTransition_$position"
         Glide.with(holder.itemView)
-            .load(data[position].photoUrl)
+            .load(item?.photoUrl)
             .listener(object : RequestListener<Drawable> {
                 override fun onLoadFailed(
                     e: GlideException?,
@@ -65,9 +66,9 @@ class ListStoryAdapter(
             .into(holder.image)
 
         holder.itemView.setOnClickListener {
-            callback.invoke(position, holder.image)
+            if (item != null) {
+                callback.invoke(item, holder.image)
+            }
         }
     }
-
-    override fun getItemCount(): Int = data.size
 }
