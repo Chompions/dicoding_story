@@ -15,7 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.snackbar.Snackbar
 import com.sawelo.dicoding_story.databinding.ActivityCameraBinding
-import com.sawelo.dicoding_story.utils.CameraUtils
+import com.sawelo.dicoding_story.utils.CameraUtilsImpl
 
 class CameraActivity : AppCompatActivity() {
     private lateinit var binding: ActivityCameraBinding
@@ -99,7 +99,7 @@ class CameraActivity : AppCompatActivity() {
 
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
-        val photoFile = CameraUtils.createTempFile(this)
+        val photoFile = CameraUtilsImpl.createTempFile(this)
         val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
         imageCapture.takePicture(

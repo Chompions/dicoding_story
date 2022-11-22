@@ -24,17 +24,17 @@ data class LoginResultResponse(
 
 data class StoryListResponse(
     @field:SerializedName("id")
-    val id: String,
+    val id: String = "id",
     @field:SerializedName("name")
-    val name: String,
+    val name: String = "name",
     @field:SerializedName("description")
-    val description: String,
+    val description: String = "description",
     @field:SerializedName("photoUrl")
-    val photoUrl: String,
+    val photoUrl: String = "photoUrl",
     @field:SerializedName("createdAt")
-    val createdAt: String,
+    val createdAt: String = "createdAt",
     @field:SerializedName("lat")
-    val lat: Float,
+    val lat: Float = 0F,
     @field:SerializedName("lon")
-    val lon: Float,
+    val lon: Float = 0F,
 )

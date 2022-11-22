@@ -41,7 +41,6 @@ class StoryRepositoryImpl @Inject constructor(
                 )
                 .show()
         }
-
     }
 
     override suspend fun login(

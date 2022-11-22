@@ -5,6 +5,7 @@ import android.transition.TransitionInflater
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.view.doOnPreDraw
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -14,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sawelo.dicoding_story.R
 import com.sawelo.dicoding_story.databinding.FragmentListStoryBinding
+import com.sawelo.dicoding_story.remote.StoryListResponse
 import com.sawelo.dicoding_story.ui.ListStoryAdapter
 import com.sawelo.dicoding_story.ui.StoryViewModel
 import com.sawelo.dicoding_story.utils.SharedPrefsData
@@ -73,19 +75,20 @@ class ListStoryFragment : Fragment() {
 
     private fun setRecyclerView() {
         lifecycleScope.launch {
-            adapter = ListStoryAdapter(StoryComparator) {
-                    data, imageView ->
+            val callback = object : ListStoryAdapter.ListStoryAdapterCallback {
+                override fun setOnClick(item: StoryListResponse, imageView: ImageView) {
+                    viewModel.setCurrentStory(item)
 
-                viewModel.setCurrentStory(data)
-
-                parentFragmentManager.commit {
-                    setReorderingAllowed(true)
-                    addToBackStack(null)
-                    addSharedElement(imageView, imageView.transitionName)
-                    replace<DetailStoryFragment>(R.id.fcv_story_fragmentContainer)
+                    parentFragmentManager.commit {
+                        setReorderingAllowed(true)
+                        addToBackStack(null)
+                        addSharedElement(imageView, imageView.transitionName)
+                        replace<DetailStoryFragment>(R.id.fcv_story_fragmentContainer)
+                    }
                 }
-            }
 
+            }
+            adapter = ListStoryAdapter(StoryComparator, callback)
             binding.rvListRecyclerView.layoutManager = LinearLayoutManager(context)
             binding.rvListRecyclerView.adapter = adapter
         }

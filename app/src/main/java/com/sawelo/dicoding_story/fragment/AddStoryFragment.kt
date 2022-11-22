@@ -19,7 +19,7 @@ import com.sawelo.dicoding_story.R
 import com.sawelo.dicoding_story.activity.CameraActivity
 import com.sawelo.dicoding_story.databinding.FragmentAddStoryBinding
 import com.sawelo.dicoding_story.ui.StoryViewModel
-import com.sawelo.dicoding_story.utils.CameraUtils
+import com.sawelo.dicoding_story.utils.CameraUtilsImpl
 import com.sawelo.dicoding_story.utils.SharedPrefsData
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -99,7 +99,7 @@ class AddStoryFragment : Fragment() {
                     ) as File
                 }
 
-                val smallerFile = CameraUtils.createTempFile(requireContext())
+                val smallerFile = CameraUtilsImpl.createTempFile(requireContext())
                 val inputStream = file.inputStream()
                 val outputStream = FileOutputStream(smallerFile)
                 val buffer = ByteArray(1024)
@@ -122,7 +122,7 @@ class AddStoryFragment : Fragment() {
         if (result.resultCode == Activity.RESULT_OK) {
             lifecycleScope.launch(Dispatchers.IO) {
                 val selectedImg: Uri = result.data?.data as Uri
-                val file = CameraUtils.createTempFile(requireContext())
+                val file = CameraUtilsImpl.createTempFile(requireContext())
 
                 val inputStream = requireContext().contentResolver
                     .openInputStream(selectedImg) as InputStream

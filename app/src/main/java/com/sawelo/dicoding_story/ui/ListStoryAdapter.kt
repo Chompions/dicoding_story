@@ -20,7 +20,7 @@ import com.sawelo.dicoding_story.remote.StoryListResponse
 
 class ListStoryAdapter(
     diffUtil: DiffUtil.ItemCallback<StoryListResponse>,
-    private val callback: (item: StoryListResponse, imageView: ImageView) -> Unit
+    private val callback: ListStoryAdapterCallback? = null
 ) : PagingDataAdapter<StoryListResponse, ListStoryAdapter.ListStoryViewHolder>(diffUtil) {
 
     inner class ListStoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -67,8 +67,12 @@ class ListStoryAdapter(
 
         holder.itemView.setOnClickListener {
             if (item != null) {
-                callback.invoke(item, holder.image)
+                callback?.setOnClick(item, holder.image)
             }
         }
+    }
+
+    interface ListStoryAdapterCallback {
+        fun setOnClick(item: StoryListResponse, imageView: ImageView)
     }
 }

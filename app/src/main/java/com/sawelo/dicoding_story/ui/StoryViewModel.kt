@@ -9,6 +9,7 @@ import androidx.paging.cachedIn
 import com.sawelo.dicoding_story.remote.StoryListResponse
 import com.sawelo.dicoding_story.remote.StoryRepository
 import com.sawelo.dicoding_story.utils.CameraUtils
+import com.sawelo.dicoding_story.utils.CameraUtilsImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MediaType.Companion.toMediaType
@@ -37,12 +38,25 @@ class StoryViewModel @Inject constructor(
         _currentStory.value = story
     }
 
+    fun setTempStoryDescText(text: String) {
+        _tempStoryDescText.value = text
+    }
+
     fun setTempStoryImageFile(file: File) {
         _tempStoryImageFile.postValue(file)
     }
 
-    fun setTempStoryDescText(text: String) {
-        _tempStoryDescText.value = text
+    fun getDescTextRequestBody(): RequestBody? {
+        return _tempStoryDescText.value?.toRequestBody("text/plain".toMediaType())
+    }
+
+    fun getImageFileMultipartBody(cameraUtils: CameraUtils = CameraUtilsImpl): MultipartBody.Part? {
+        val file = _tempStoryImageFile.value
+        return if (file != null) {
+            val compressedFile = cameraUtils.reduceFileImage(file)
+            val request = compressedFile.asRequestBody("image/file".toMediaTypeOrNull())
+            MultipartBody.Part.createFormData("photo", compressedFile.name, request)
+        } else null
     }
 
     fun getStories(): Flow<PagingData<StoryListResponse>> {
@@ -50,19 +64,6 @@ class StoryViewModel @Inject constructor(
             _storiesPagingData = storyRepository.getStoriesFlow().cachedIn(viewModelScope)
         }
         return _storiesPagingData as Flow<PagingData<StoryListResponse>>
-    }
-
-    fun getDescTextRequestBody(): RequestBody? {
-        return tempStoryDescText.value?.toRequestBody("text/plain".toMediaType())
-    }
-
-    fun getImageFileMultipartBody(): MultipartBody.Part? {
-        val file = tempStoryImageFile.value
-        return if (file != null) {
-            val compressedFile = CameraUtils.reduceFileImage(file)
-            val request = compressedFile.asRequestBody("image/file".toMediaTypeOrNull())
-            MultipartBody.Part.createFormData("photo", compressedFile.name, request)
-        } else null
     }
 
     suspend fun postStory() {
