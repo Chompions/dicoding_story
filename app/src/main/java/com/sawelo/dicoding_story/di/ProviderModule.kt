@@ -5,24 +5,17 @@ import android.content.SharedPreferences
 import androidx.room.Room
 import com.sawelo.dicoding_story.data.local.AppDatabase
 import com.sawelo.dicoding_story.data.remote.StoryRepository
-import com.sawelo.dicoding_story.utils.SharedPrefsData
 import com.sawelo.dicoding_story.widget.StackRemoteViewsFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Inject
 import javax.inject.Singleton
 
 @InstallIn(SingletonComponent::class)
 @Module
 class ProviderModule {
-    @Inject
-    lateinit var storyRepository: StoryRepository
-    @Inject
-    lateinit var sharedPrefsData: SharedPrefsData
-
     @Singleton
     @Provides
     fun provideSharedPrefs(@ApplicationContext context: Context): SharedPreferences {
@@ -31,8 +24,10 @@ class ProviderModule {
 
     @Singleton
     @Provides
-    fun provideStackRemoteViewsFactory(@ApplicationContext context: Context)
-    : StackRemoteViewsFactory {
+    fun provideStackRemoteViewsFactory(
+        @ApplicationContext context: Context,
+        storyRepository: StoryRepository
+    ): StackRemoteViewsFactory {
         return StackRemoteViewsFactory(context, storyRepository)
     }
 
