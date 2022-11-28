@@ -1,0 +1,26 @@
+Skenario test 
+
+a. Ketika menetapkan dan mengambil 'currentStory' yang akan ditampilkan
+Memastikan data palsu dan data sebenarnya yang dikembalikan sama 
+Memastikan data sebenarnya tidak null 
+
+b. Ketika menetapkan dan mengambil data Deskripsi yang akan ditampilkan
+Memastikan panjang konten data palsu dan data sebenarnya sama 
+Memastikan tipe konten data palsu dan data sebenarnya sama 
+
+c.  Ketika menetapkan dan mengambil data Deskripsi dengan data kosong
+Memastikan data sebenarnya yang dikembalikan null
+
+d. Ketika menetapkan dan mengambil data Gambar 
+Memastikan panjang konten data palsu dan data sebenarnya sama 
+Memastikan tipe konten data palsu dan data sebenarnya sama 
+
+e. Ketika mengambil data 'Story' dari repository
+Memastikan data palsu dan data sebenarnya yang dikembalikan sama
+Memastikan data sebenarnya tidak null 
+
+f. Ketika mengirimkan gambar tanpa lokasi
+Memastikan fungsi repository berjalan serta data palsu dan data sebenarnya sama. Lokasi memberikan hasil null
+
+f. Ketika mengirimkan gambar dengan lokasi
+Memastikan fungsi repository berjalan serta data palsu dan data sebenarnya sama.

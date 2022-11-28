@@ -21,6 +21,10 @@ import com.sawelo.dicoding_story.ui.StoryViewModel
 import com.sawelo.dicoding_story.utils.SharedPrefsData
 import com.sawelo.dicoding_story.utils.StoryComparator
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -64,8 +68,21 @@ class ListStoryFragment : Fragment() {
             binding?.srlListSwipeRefreshLayout?.isRefreshing = false
         }
 
-        parentFragmentManager.addOnBackStackChangedListener {
+        parentFragmentManager.setFragmentResultListener(
+            AddStoryFragment.ADD_STORY_REQUEST_KEY,
+            viewLifecycleOwner
+        ) { _, result ->
             adapter.refresh()
+            var isAddStoryFinished = result.getBoolean(AddStoryFragment.ADD_STORY_FINISHED)
+            lifecycleScope.launch {
+                adapter.loadStateFlow
+                    .onStart { delay(500L) }
+                    .takeWhile { isAddStoryFinished }
+                    .collectLatest {
+                        binding?.rvListRecyclerView?.smoothScrollToPosition(0)
+                        isAddStoryFinished = false
+                    }
+            }
         }
     }
 

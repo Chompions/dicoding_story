@@ -14,6 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.os.bundleOf
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -106,6 +107,9 @@ class AddStoryFragment : Fragment() {
                     viewModel.getDescTextRequestBody() != null
                 ) {
                     viewModel.postStory(CameraUtilsImpl)
+                    parentFragmentManager.setFragmentResult(
+                        ADD_STORY_REQUEST_KEY,
+                        bundleOf(ADD_STORY_FINISHED to true))
                     parentFragmentManager.popBackStack()
                 } else {
                     Snackbar
@@ -193,5 +197,8 @@ class AddStoryFragment : Fragment() {
         }
     }
 
-
+    companion object {
+        const val ADD_STORY_REQUEST_KEY = "ADD_STORY_REQUEST_KEY"
+        const val ADD_STORY_FINISHED = "ADD_STORY_FINISHED"
+    }
 }
