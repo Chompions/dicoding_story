@@ -1,6 +1,8 @@
-package com.sawelo.dicoding_story.remote
+package com.sawelo.dicoding_story.data.remote
 
+import android.location.Location
 import androidx.paging.PagingData
+import com.sawelo.dicoding_story.data.StoryListResponse
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -18,18 +20,17 @@ interface StoryRepository {
     )
 
     suspend fun postStory(
-        file: MultipartBody.Part,
-        description: RequestBody
+        file: MultipartBody.Part?,
+        description: RequestBody?,
+        location: Location? = null,
     )
 
     suspend fun getStoriesList(
-        page: Int = 1,
-        size: Int = 10,
-    ): List<StoryListResponse>?
+        page: Int,
+        size: Int,
+        location: Int = 0
+    ): List<StoryListResponse>
 
-    fun getStoriesFlow(
-        page: Int = 1,
-        size: Int = 10,
-    ): Flow<PagingData<StoryListResponse>>
+    fun getStoriesFlow(): Flow<PagingData<StoryListResponse>>
 
 }

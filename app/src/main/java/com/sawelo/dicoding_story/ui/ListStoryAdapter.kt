@@ -16,7 +16,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.sawelo.dicoding_story.R
-import com.sawelo.dicoding_story.remote.StoryListResponse
+import com.sawelo.dicoding_story.data.StoryListResponse
 
 class ListStoryAdapter(
     diffUtil: DiffUtil.ItemCallback<StoryListResponse>,

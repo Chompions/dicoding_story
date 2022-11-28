@@ -1,5 +1,7 @@
-package com.sawelo.dicoding_story.remote
+package com.sawelo.dicoding_story.data
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 
 data class StoryResponse(
@@ -22,7 +24,9 @@ data class LoginResultResponse(
     val token: String,
 )
 
+@Entity(tableName = "story_list")
 data class StoryListResponse(
+    @PrimaryKey
     @field:SerializedName("id")
     val id: String = "id",
     @field:SerializedName("name")
@@ -34,7 +38,7 @@ data class StoryListResponse(
     @field:SerializedName("createdAt")
     val createdAt: String = "createdAt",
     @field:SerializedName("lat")
-    val lat: Float = 0F,
+    val lat: Double = 0.0,
     @field:SerializedName("lon")
-    val lon: Float = 0F,
+    val lon: Double = 0.0,
 )

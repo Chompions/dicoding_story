@@ -1,7 +1,7 @@
 package com.sawelo.dicoding_story.utils
 
 import androidx.recyclerview.widget.DiffUtil
-import com.sawelo.dicoding_story.remote.StoryListResponse
+import com.sawelo.dicoding_story.data.StoryListResponse
 
 object StoryComparator : DiffUtil.ItemCallback<StoryListResponse>() {
     override fun areItemsTheSame(oldItem: StoryListResponse, newItem: StoryListResponse): Boolean {

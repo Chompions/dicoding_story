@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -27,11 +28,11 @@ class CameraActivity : AppCompatActivity() {
         binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if (!allPermissionsGranted()) {
+        if (!isCameraPermissionsGranted()) {
             ActivityCompat.requestPermissions(
                 this,
-                REQUIRED_PERMISSIONS,
-                REQUEST_CODE_PERMISSIONS
+                REQUIRED_PERMISSIONS_CAMERA,
+                REQUEST_CODE_PERMISSIONS_CAMERA
             )
         }
 
@@ -55,17 +56,18 @@ class CameraActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (!allPermissionsGranted()) {
-                Snackbar
-                    .make(binding.root, "Permissions denied", Snackbar.LENGTH_SHORT)
+        if (requestCode == REQUEST_CODE_PERMISSIONS_CAMERA) {
+            if (!isCameraPermissionsGranted()) {
+                Toast
+                    .makeText(this, "Permissions denied", Toast.LENGTH_SHORT)
                     .show()
+                finish()
             }
         }
     }
 
-    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
-        ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+    private fun isCameraPermissionsGranted() = REQUIRED_PERMISSIONS_CAMERA.all {
+        ActivityCompat.checkSelfPermission(this, it) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun startCamera() {
@@ -123,8 +125,8 @@ class CameraActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val REQUEST_CODE_PERMISSIONS = 10
-        private val REQUIRED_PERMISSIONS = arrayOf(CAMERA)
+        private const val REQUEST_CODE_PERMISSIONS_CAMERA = 10
+        private val REQUIRED_PERMISSIONS_CAMERA = arrayOf(CAMERA)
         const val PHOTO_EXTRA = "PHOTO_EXTRA"
     }
 }

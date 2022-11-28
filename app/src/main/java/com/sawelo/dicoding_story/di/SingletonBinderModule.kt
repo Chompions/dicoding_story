@@ -1,7 +1,7 @@
 package com.sawelo.dicoding_story.di
 
-import com.sawelo.dicoding_story.remote.StoryRepository
-import com.sawelo.dicoding_story.remote.StoryRepositoryImpl
+import com.sawelo.dicoding_story.data.remote.StoryRepository
+import com.sawelo.dicoding_story.data.remote.StoryRepositoryImpl
 import com.sawelo.dicoding_story.utils.SharedPrefsData
 import com.sawelo.dicoding_story.utils.SharedPrefsDataImpl
 import dagger.Binds

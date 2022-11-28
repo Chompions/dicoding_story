@@ -1,13 +1,17 @@
-package com.sawelo.dicoding_story.remote
+package com.sawelo.dicoding_story.data.remote
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.location.Location
 import android.widget.Toast
 import androidx.core.content.edit
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.sawelo.dicoding_story.ui.StoryPagingSource
+import com.sawelo.dicoding_story.data.StoryListResponse
+import com.sawelo.dicoding_story.data.local.AppDatabase
+import com.sawelo.dicoding_story.data.local.StoryRemoteMediator
 import com.sawelo.dicoding_story.utils.SharedPrefsData
 import com.sawelo.dicoding_story.utils.SharedPrefsDataImpl
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -21,7 +25,8 @@ import javax.inject.Singleton
 class StoryRepositoryImpl @Inject constructor(
     @ApplicationContext val context: Context,
     private val sharedPrefs: SharedPreferences,
-    private val sharedPrefsData: SharedPrefsData
+    private val sharedPrefsData: SharedPrefsData,
+    private val appDatabase: AppDatabase
 ) : StoryRepository {
     private val apiService = ApiConfig.getApiService()
 
@@ -29,7 +34,7 @@ class StoryRepositoryImpl @Inject constructor(
         name: String,
         email: String,
         password: String
-    ){
+    ) {
         try {
             apiService.register(name, email, password)
         } catch (e: Exception) {
@@ -48,11 +53,11 @@ class StoryRepositoryImpl @Inject constructor(
         password: String,
     ) {
         try {
-            val body = apiService.login(email, password).body()
+            val body = apiService.login(email, password)
             sharedPrefs.edit {
-                putString(SharedPrefsDataImpl.USER_ID_PREF_KEY, body?.loginResult?.userId)
-                putString(SharedPrefsDataImpl.NAME_PREF_KEY, body?.loginResult?.name)
-                putString(SharedPrefsDataImpl.TOKEN_PREF_KEY, body?.loginResult?.token)
+                putString(SharedPrefsDataImpl.USER_ID_PREF_KEY, body.loginResult?.userId)
+                putString(SharedPrefsDataImpl.NAME_PREF_KEY, body.loginResult?.name)
+                putString(SharedPrefsDataImpl.TOKEN_PREF_KEY, body.loginResult?.token)
             }
             Toast
                 .makeText(
@@ -73,19 +78,28 @@ class StoryRepositoryImpl @Inject constructor(
     }
 
     override suspend fun postStory(
-        file: MultipartBody.Part,
-        description: RequestBody
+        file: MultipartBody.Part?,
+        description: RequestBody?,
+        location: Location?
     ) {
         val token = "Bearer ${sharedPrefsData.getToken()}"
         try {
-            val response = apiService.postStory(token, file, description)
+            if (file != null && description != null) {
+                if (location != null) {
+                    apiService.postStoryWithLocation(
+                        token, file, description,
+                        location.latitude.toFloat(), location.longitude.toFloat()
+                    )
+                } else {
+                    apiService.postStory(token, file, description)
+                }
+            }
             Toast
                 .makeText(
                     context, "Upload story succeed",
                     Toast.LENGTH_SHORT
                 )
                 .show()
-            response.body()
         } catch (e: Exception) {
             Toast
                 .makeText(
@@ -96,10 +110,14 @@ class StoryRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getStoriesList(page: Int, size: Int): List<StoryListResponse>? {
+    override suspend fun getStoriesList(
+        page: Int,
+        size: Int,
+        location: Int
+    ): List<StoryListResponse> {
         val token = "Bearer ${sharedPrefsData.getToken()}"
         return try {
-            apiService.getStories(token, page, size).body()?.listStory
+            apiService.getStories(token, page, size, location).listStory!!
         } catch (e: Exception) {
             Toast
                 .makeText(
@@ -108,16 +126,17 @@ class StoryRepositoryImpl @Inject constructor(
                     Toast.LENGTH_SHORT
                 )
                 .show()
-            null
+            throw Exception("Get stories failed")
         }
     }
 
-    override fun getStoriesFlow(page: Int, size: Int): Flow<PagingData<StoryListResponse>> {
+    @OptIn(ExperimentalPagingApi::class)
+    override fun getStoriesFlow(): Flow<PagingData<StoryListResponse>> {
         return Pager(
-                config = PagingConfig(pageSize = size),
-        pagingSourceFactory = {
-            StoryPagingSource(this)
-        }
-        ).flow
+            config = PagingConfig(pageSize = 5),
+            remoteMediator = StoryRemoteMediator(appDatabase, this),
+        ) {
+            appDatabase.storyDao().queryPagingSource()
+        }.flow
     }
 }

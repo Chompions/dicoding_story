@@ -2,8 +2,9 @@ package com.sawelo.dicoding_story.di
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.sawelo.dicoding_story.remote.StoryRepository
-import com.sawelo.dicoding_story.ui.StoryPagingSource
+import androidx.room.Room
+import com.sawelo.dicoding_story.data.local.AppDatabase
+import com.sawelo.dicoding_story.data.remote.StoryRepository
 import com.sawelo.dicoding_story.utils.SharedPrefsData
 import com.sawelo.dicoding_story.widget.StackRemoteViewsFactory
 import dagger.Module
@@ -37,8 +38,10 @@ class ProviderModule {
 
     @Singleton
     @Provides
-    fun provideStoryPageSource(): StoryPagingSource {
-        return StoryPagingSource(storyRepository)
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+        return Room.databaseBuilder(
+            context, AppDatabase::class.java, "dicoding_story_database"
+        ).build()
     }
 
     companion object {

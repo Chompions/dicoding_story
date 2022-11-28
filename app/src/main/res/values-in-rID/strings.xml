@@ -20,4 +20,6 @@
     <string name="settings">Pengaturan</string>
     <string name="add_your_image_description">Tambahkan deskripsi gambarmu</string>
     <string name="error_add_story">Gambar atau deskripsi tidak boleh kosong</string>
+    <string name="maps">Peta</string>
+    <string name="add_current_location">Tambahkan lokasi saat ini</string>
 </resources>

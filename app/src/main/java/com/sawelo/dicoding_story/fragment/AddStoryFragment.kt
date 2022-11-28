@@ -1,5 +1,8 @@
 package com.sawelo.dicoding_story.fragment
 
+import android.Manifest.permission.ACCESS_COARSE_LOCATION
+import android.Manifest.permission.ACCESS_FINE_LOCATION
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -9,11 +12,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.snackbar.Snackbar
 import com.sawelo.dicoding_story.R
 import com.sawelo.dicoding_story.activity.CameraActivity
@@ -34,6 +40,7 @@ class AddStoryFragment : Fragment() {
     @Inject
     lateinit var prefsData: SharedPrefsData
     private lateinit var binding: FragmentAddStoryBinding
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val viewModel: StoryViewModel by activityViewModels()
 
     override fun onCreateView(
@@ -47,42 +54,69 @@ class AddStoryFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setIvAddPhoto()
+        setBtnAddCamera()
+        setBtnAddGallery()
+        setEdAddDescription()
+        setRbAddLocation()
+        setBtnAddUpload()
+    }
+
+    private fun setIvAddPhoto() {
         viewModel.tempStoryImageFile.observe(viewLifecycleOwner) {
             val decodedImage = BitmapFactory.decodeFile(it.path)
             binding.ivAddPhoto.setImageBitmap(decodedImage)
         }
+    }
 
-        binding.edAddDescription.setText(viewModel.tempStoryDescText.value)
-        binding.edAddDescription.doAfterTextChanged { viewModel.setTempStoryDescText(it.toString()) }
+    private fun setEdAddDescription() {
+        binding.edAddDescription.setText(viewModel.tempStoryDescText)
+        binding.edAddDescription.doAfterTextChanged { viewModel.tempStoryDescText = it.toString() }
+    }
 
+    private fun setBtnAddCamera() {
         binding.btnAddCamera.setOnClickListener {
             val intent = Intent(context, CameraActivity::class.java)
             launcherCameraActivityResult.launch(intent)
         }
+    }
 
+    private fun setBtnAddGallery() {
         binding.btnAddGallery.setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
             val chooser = Intent.createChooser(intent, "Choose a Picture")
             launcherIntentGalleryResult.launch(chooser)
         }
+    }
 
+    private fun setRbAddLocation() {
+        binding.rbAddLocation.isChecked = false
+        binding.rbAddLocation.setOnCheckedChangeListener { _, isChecked ->
+            val requiredPermissions = arrayOf(ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION)
+            if (isChecked) launcherLocationPermissionResult.launch(requiredPermissions)
+        }
+    }
+
+    private fun setBtnAddUpload() {
         binding.btnAddUpload.setOnClickListener {
             lifecycleScope.launch {
                 binding.pbAddProgressBar.visibility = View.VISIBLE
-                if (viewModel.getDescTextRequestBody() != null && viewModel.getImageFileMultipartBody() != null) {
-                    viewModel.postStory()
+                if (viewModel.getImageFileMultipartBody(CameraUtilsImpl) != null &&
+                    viewModel.getDescTextRequestBody() != null
+                ) {
+                    viewModel.postStory(CameraUtilsImpl)
                     parentFragmentManager.popBackStack()
                 } else {
                     Snackbar
                         .make(binding.btnAddUpload, R.string.error_add_story, Snackbar.LENGTH_SHORT)
                         .show()
                 }
-
                 binding.pbAddProgressBar.visibility = View.GONE
             }
         }
     }
+
 
     private val launcherCameraActivityResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -140,4 +174,24 @@ class AddStoryFragment : Fragment() {
             }
         }
     }
+
+    @SuppressLint("MissingPermission")
+    private val launcherLocationPermissionResult = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val anyPermissionGranted = permissions.entries.any { it.value }
+        if (anyPermissionGranted) {
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
+            fusedLocationClient.lastLocation.addOnSuccessListener {
+                viewModel.tempStoryLocation = it
+            }
+        } else {
+            binding.rbAddLocation.isChecked = false
+            Toast
+                .makeText(requireContext(), "Permissions denied", Toast.LENGTH_SHORT)
+                .show()
+        }
+    }
+
+
 }

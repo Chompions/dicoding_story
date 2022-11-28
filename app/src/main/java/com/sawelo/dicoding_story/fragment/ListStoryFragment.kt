@@ -14,14 +14,13 @@ import androidx.fragment.app.replace
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.sawelo.dicoding_story.R
+import com.sawelo.dicoding_story.data.StoryListResponse
 import com.sawelo.dicoding_story.databinding.FragmentListStoryBinding
-import com.sawelo.dicoding_story.remote.StoryListResponse
 import com.sawelo.dicoding_story.ui.ListStoryAdapter
 import com.sawelo.dicoding_story.ui.StoryViewModel
 import com.sawelo.dicoding_story.utils.SharedPrefsData
 import com.sawelo.dicoding_story.utils.StoryComparator
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,9 +28,9 @@ import javax.inject.Inject
 class ListStoryFragment : Fragment() {
     @Inject
     lateinit var sharedPrefsData: SharedPrefsData
-    private lateinit var binding: FragmentListStoryBinding
     private lateinit var adapter: ListStoryAdapter
     private val viewModel: StoryViewModel by activityViewModels()
+    private var binding: FragmentListStoryBinding? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,52 +44,60 @@ class ListStoryFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         binding = FragmentListStoryBinding.inflate(inflater, container, false)
-        return binding.root
+        return binding!!.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         postponeEnterTransition()
-        setRecyclerView()
-        setData()
+        setAdapter()
 
-        binding.fabListAddStory.setOnClickListener {
+        binding?.fabListAddStory?.setOnClickListener {
             parentFragmentManager.commit {
                 addToBackStack(null)
                 replace<AddStoryFragment>(R.id.fcv_story_fragmentContainer)
             }
         }
+
+        binding?.srlListSwipeRefreshLayout?.setOnRefreshListener {
+            adapter.refresh()
+            binding?.srlListSwipeRefreshLayout?.isRefreshing = false
+        }
+
+        parentFragmentManager.addOnBackStackChangedListener {
+            adapter.refresh()
+        }
     }
 
-    private fun setData() {
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding = null
+    }
+
+    private fun setAdapter() {
+        val callback = object : ListStoryAdapter.ListStoryAdapterCallback {
+            override fun setOnClick(item: StoryListResponse, imageView: ImageView) {
+                viewModel.setCurrentStory(item)
+                parentFragmentManager.commit {
+                    setReorderingAllowed(true)
+                    addToBackStack(null)
+                    addSharedElement(imageView, imageView.transitionName)
+                    replace<DetailStoryFragment>(R.id.fcv_story_fragmentContainer)
+                }
+            }
+        }
+        adapter = ListStoryAdapter(StoryComparator, callback)
+        binding?.rvListRecyclerView?.layoutManager = LinearLayoutManager(context)
+        binding?.rvListRecyclerView?.adapter = adapter
+
         lifecycleScope.launch {
-            viewModel.getStories().collectLatest { story ->
+            viewModel.getStoriesFlow().collect { story ->
                 adapter.submitData(story)
             }
         }
-        (view?.parent as ViewGroup).doOnPreDraw {
+
+        (view as ViewGroup).doOnPreDraw {
             startPostponedEnterTransition()
-        }
-    }
-
-    private fun setRecyclerView() {
-        lifecycleScope.launch {
-            val callback = object : ListStoryAdapter.ListStoryAdapterCallback {
-                override fun setOnClick(item: StoryListResponse, imageView: ImageView) {
-                    viewModel.setCurrentStory(item)
-
-                    parentFragmentManager.commit {
-                        setReorderingAllowed(true)
-                        addToBackStack(null)
-                        addSharedElement(imageView, imageView.transitionName)
-                        replace<DetailStoryFragment>(R.id.fcv_story_fragmentContainer)
-                    }
-                }
-
-            }
-            adapter = ListStoryAdapter(StoryComparator, callback)
-            binding.rvListRecyclerView.layoutManager = LinearLayoutManager(context)
-            binding.rvListRecyclerView.adapter = adapter
         }
     }
 }

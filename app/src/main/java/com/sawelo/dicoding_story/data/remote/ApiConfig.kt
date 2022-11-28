@@ -1,4 +1,4 @@
-package com.sawelo.dicoding_story.remote
+package com.sawelo.dicoding_story.data.remote
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

@@ -10,7 +10,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.sawelo.dicoding_story.R
-import com.sawelo.dicoding_story.remote.StoryRepository
+import com.sawelo.dicoding_story.data.remote.StoryRepository
 import com.sawelo.dicoding_story.widget.StoryWidgetProvider.Companion.notifyRemoteDataChanged
 import kotlinx.coroutines.*
 import javax.inject.Inject
@@ -38,10 +38,10 @@ class StackRemoteViewsFactory @Inject constructor(
 
     override fun onDataSetChanged() {
         coroutineScope.launch {
-            val stories = repository.getStoriesList()
+            val stories = repository.getStoriesList(1, 10)
             val list = mutableListOf<Bitmap>()
 
-            stories?.forEach { story ->
+            stories.forEach { story ->
                 val bitmap =
                     withContext(Dispatchers.IO) {
                         Glide.with(context)

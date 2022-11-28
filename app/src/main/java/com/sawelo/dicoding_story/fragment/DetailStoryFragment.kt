@@ -46,7 +46,7 @@ class DetailStoryFragment : Fragment() {
                 names: MutableList<String>?,
                 sharedElements: MutableMap<String, View>?
             ) {
-                if (names != null) {
+                if (!names.isNullOrEmpty()) {
                     sharedElements?.put(names.first(), binding.ivDetailPhoto)
                 }
             }

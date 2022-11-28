@@ -3,7 +3,7 @@ package com.sawelo.dicoding_story.ui
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.sawelo.dicoding_story.remote.StoryRepository
+import com.sawelo.dicoding_story.data.remote.StoryRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
