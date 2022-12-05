@@ -7,6 +7,7 @@ import androidx.paging.*
 import androidx.recyclerview.widget.AdapterListUpdateCallback
 import com.sawelo.dicoding_story.data.StoryListResponse
 import com.sawelo.dicoding_story.data.remote.StoryRepository
+import com.sawelo.dicoding_story.ui.TestUtils.randomString
 import com.sawelo.dicoding_story.utils.CameraUtils
 import com.sawelo.dicoding_story.utils.StoryComparator
 import kotlinx.coroutines.*
@@ -36,15 +37,6 @@ class StoryViewModelTest {
     @Mock private lateinit var mockCameraUtils: CameraUtils
     private lateinit var storyViewModel: StoryViewModel
     private val dispatcher = StandardTestDispatcher()
-
-    private fun randomString(prefix: String = ""): String {
-        val charPool = ('a'..'z') + ('A'..'Z')
-        return (1..20).map {
-            Random.nextInt(0, charPool.size).let {
-                charPool[it]
-            }
-        }.joinToString("", prefix)
-    }
 
     private fun fakeStoryListResponse(prefix: String) = StoryListResponse(
         id = randomString(prefix),

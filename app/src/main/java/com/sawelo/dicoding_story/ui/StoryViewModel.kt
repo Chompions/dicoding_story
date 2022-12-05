@@ -26,8 +26,10 @@ class StoryViewModel @Inject constructor(
     private val storyRepository: StoryRepository
 ) : ViewModel() {
     private var _storiesPagingData: Flow<PagingData<StoryListResponse>>? = null
+
     private val _currentStory = MutableLiveData<StoryListResponse>()
     val currentStory: LiveData<StoryListResponse> = _currentStory
+
     private val _tempStoryImageFile = MutableLiveData<File>()
     val tempStoryImageFile: LiveData<File> = _tempStoryImageFile
 
